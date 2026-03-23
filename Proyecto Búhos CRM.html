@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Búhos — CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #F5F3EE;
+  --surface:  #FFFFFF;
+  --surface2: #F0EDE6;
+  --border:   #DDD9D0;
+  --border2:  #C8C4BC;
+  --text:     #1A1916;
+  --muted:    #7A7670;
+  --accent:   #1A1916;
+
+  --c0: #888780; --c0bg: #F1EFE8;
+  --c1: #BA7517; --c1bg: #FEF3DC;
+  --c2: #185FA5; --c2bg: #E6F1FB;
+  --c3: #0F6E56; --c3bg: #E1F5EE;
+  --c4: #7B3FA0; --c4bg: #F3EAFA;
+  --c5: #C0392B; --c5bg: #FDECEB;
+  --c6: #2C7A6E; --c6bg: #E0F2EF;
+  --c7: #3B6D11; --c7bg: #EAF3DE;
+  --c8: #534AB7; --c8bg: #EEEDFE;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── TOPNAV ── */
+.topnav {
+  height: 48px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.logo {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-owl { font-size: 18px; }
+.nav-tabs { display: flex; }
+.nav-tab {
+  height: 48px;
+  line-height: 48px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active { color: var(--text); border-bottom-color: var(--text); }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.user-chip {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+.btn-new {
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--text);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+}
+.btn-new:hover { opacity: 0.85; }
+
+/* ── PIPELINE SELECTOR ── */
+.pipeline-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.pipe-btn {
+  padding: 8px 14px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+.pipe-btn:hover { color: var(--text); }
+.pipe-btn.active { color: var(--text); border-bottom-color: var(--text); }
+.pipe-divider { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
+
+/* ── WORKSPACE ── */
+.workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── KANBAN ── */
+.kanban-wrap {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 14px;
+}
+.kanban-board {
+  display: flex;
+  gap: 10px;
+  height: 100%;
+  min-width: max-content;
+}
+.kanban-col {
+  width: 200px;
+  background: var(--surface2);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.col-header {
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.col-header-left { display: flex; align-items: center; gap: 7px; }
+.col-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.col-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.col-count {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1px 7px;
+  color: var(--muted);
+}
+.col-cards {
+  padding: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ── CARDS ── */
+.kcard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 11px;
+  cursor: pointer;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.kcard:hover { border-color: var(--border2); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.kcard.selected { border-color: #185FA5; box-shadow: 0 0 0 2px rgba(24,95,165,0.1); }
+.kcard-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 3px; }
+.kcard-empresa { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.kcard-tipo-badge {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+.tipo-empresa { background: #E6F1FB; color: #185FA5; }
+.tipo-persona { background: #F3EAFA; color: #7B3FA0; }
+.kcard-cliente { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.kcard-concepto { font-size: 11px; color: var(--muted); line-height: 1.35; margin-bottom: 7px; }
+.kcard-footer { display: flex; align-items: center; justify-content: space-between; }
+.kcard-date { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted); }
+.canal-badge {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+.canal-gmail    { background: #FDECEB; color: #C0392B; }
+.canal-whatsapp { background: #E1F5EE; color: #0F6E56; }
+.canal-manual   { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+.empty-col {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  padding: 24px 8px;
+  opacity: 0.5;
+  font-style: italic;
+}
+
+/* ── SIDE PANEL ── */
+.side-panel {
+  width: 0;
+  overflow: hidden;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  transition: width 0.2s ease;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+.side-panel.open { width: 360px; }
+
+.panel-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.panel-header-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 4px; }
+.panel-preorden {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.panel-cliente { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.2; }
+.panel-concepto { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.btn-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+.btn-close:hover { color: var(--text); }
+
+.panel-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+
+/* SECCIÓN PANEL */
+.panel-section { margin-bottom: 16px; }
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+/* FASE PILLS */
+.fase-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+.fase-pill {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 4px 9px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  color: var(--muted);
+  background: var(--surface2);
+  transition: all 0.1s;
+  white-space: nowrap;
+}
+.fase-pill:hover { border-color: var(--border2); }
+.fase-pill.act-0  { background: var(--c0bg); border-color: var(--c0); color: var(--c0); }
+.fase-pill.act-1  { background: var(--c1bg); border-color: var(--c1); color: var(--c1); }
+.fase-pill.act-2  { background: var(--c2bg); border-color: var(--c2); color: var(--c2); }
+.fase-pill.act-3  { background: var(--c3bg); border-color: var(--c3); color: var(--c3); }
+.fase-pill.act-4  { background: var(--c4bg); border-color: var(--c4); color: var(--c4); }
+.fase-pill.act-5  { background: var(--c5bg); border-color: var(--c5); color: var(--c5); }
+.fase-pill.act-6  { background: var(--c6bg); border-color: var(--c6); color: var(--c6); }
+.fase-pill.act-7  { background: var(--c7bg); border-color: var(--c7); color: var(--c7); }
+.fase-pill.act-8  { background: var(--c8bg); border-color: var(--c8); color: var(--c8); }
+
+/* INFO GRID */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.info-cell {
+  background: var(--surface2);
+  border-radius: 7px;
+  padding: 8px 10px;
+}
+.info-cell-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 3px; }
+.info-cell-value { font-size: 12px; color: var(--text); font-weight: 500; }
+
+/* TABLA ÍTEMS */
+.items-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.btn-add {
+  font-size: 10px;
+  padding: 3px 9px;
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  background: none;
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 500;
+}
+.btn-add:hover { background: var(--surface2); }
+
+.items-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.items-table th {
+  text-align: left;
+  padding: 5px 7px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.items-table td {
+  padding: 6px 7px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+.items-table tr:last-child td { border-bottom: none; }
+.items-table input,
+.items-table select,
+.items-table textarea {
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  padding: 0;
+  resize: none;
+  outline: none;
+}
+.items-table input:focus,
+.items-table select:focus { background: var(--surface2); border-radius: 3px; padding: 1px 4px; }
+.btn-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 14px;
+  padding: 0;
+  line-height: 1;
+}
+.btn-del:hover { color: #C0392B; }
+
+/* DISEÑADOR SELECT */
+.disenador-select {
+  width: 100%;
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+}
+.disenador-select:focus { border-color: var(--border2); }
+
+/* PANEL FOOTER */
+.panel-footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.btn-sm {
+  padding: 6px 13px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-sm:hover { background: var(--surface2); }
+.btn-danger { color: #C0392B; border-color: #f5c0bb; }
+.btn-danger:hover { background: #FDECEB; }
+.btn-primary {
+  background: var(--text);
+  color: #fff;
+  border-color: var(--text);
+}
+.btn-primary:hover { opacity: 0.85; }
+.spacer { flex: 1; }
+
+/* PIPELINE SECTION HEADER */
+.pipeline-section-header {
+  padding: 6px 14px 0;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pipeline-section-line { flex: 1; height: 1px; background: var(--border); }
+
+/* MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26,25,22,0.45);
+  z-index: 100;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 80px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 400px;
+  max-width: 95vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+.modal-title { font-size: 15px; font-weight: 600; margin-bottom: 1.25rem; }
+.form-group { margin-bottom: 11px; }
+.form-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 4px;
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus { border-color: var(--border2); }
+.form-group textarea { min-height: 68px; resize: vertical; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal-actions { display: flex; gap: 7px; justify-content: flex-end; margin-top: 1.25rem; }
+
+/* TABS CONTENT */
+.tab-content { display: none; flex: 1; overflow: hidden; }
+.tab-content.active { display: flex; flex-direction: column; }
+
+/* METRICS */
+.metrics-view {
+  padding: 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+.metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 14px 16px;
+}
+.metric-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px; }
+.metric-val { font-size: 28px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--text); }
+.metric-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div style="display:flex;align-items:center;gap:1.5rem;">
+    <div class="logo"><span class="logo-owl">◈</span> Búhos Editores</div>
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="showTab('pipeline',this)">Pipeline</div>
+      <div class="nav-tab" onclick="showTab('metricas',this)">Métricas</div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <span class="user-chip">demo@buhos.co</span>
+    <button class="btn-new" onclick="abrirModal()">+ Nueva orden</button>
+  </div>
+</nav>
+
+<!-- TAB PIPELINE -->
+<div id="tab-pipeline" class="tab-content active" style="flex-direction:column;">
+  <div class="pipeline-bar">
+    <button class="pipe-btn active" onclick="setPipeline('comercial',this)">Comercial</button>
+    <div class="pipe-divider"></div>
+    <button class="pipe-btn" onclick="setPipeline('produccion',this)">Producción</button>
+    <div class="pipe-divider"></div>
+    <button class="pipe-btn" onclick="setPipeline('todo',this)">Vista completa</button>
+  </div>
+  <div class="workspace">
+    <div class="kanban-wrap">
+      <div class="kanban-board" id="board"></div>
+    </div>
+    <div class="side-panel" id="panel">
+      <div class="panel-header">
+        <div class="panel-preorden" id="p-preorden"></div>
+        <div class="panel-header-top">
+          <div class="panel-cliente" id="p-cliente"></div>
+          <button class="btn-close" onclick="cerrarPanel()">×</button>
+        </div>
+        <div class="panel-concepto" id="p-concepto"></div>
+      </div>
+      <div class="panel-body" id="p-body"></div>
+      <div class="panel-footer">
+        <button class="btn-sm btn-danger" onclick="eliminarActual()">Eliminar</button>
+        <div class="spacer"></div>
+        <button class="btn-sm" onclick="cerrarPanel()">Cerrar</button>
+        <button class="btn-sm btn-primary" onclick="guardar()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB MÉTRICAS -->
+<div id="tab-metricas" class="tab-content">
+  <div class="metrics-view" id="metrics-view"></div>
+</div>
+
+<!-- MODAL NUEVA -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title">Nueva orden</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Cliente</label><input type="text" id="f-cliente" placeholder="Nombre completo"/></div>
+      <div class="form-group"><label class="form-label">Tipo</label>
+        <select id="f-tipo">
+          <option value="Empresa">Empresa</option>
+          <option value="Persona">Persona</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Empresa / Organización</label><input type="text" id="f-empresa" placeholder="Razón social o institución"/></div>
+    <div class="form-group"><label class="form-label">Concepto / Descripción</label><textarea id="f-concepto" placeholder="¿Qué necesita el cliente? Ej: 500 tarjetas de presentación full color"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Canal de entrada</label>
+        <select id="f-canal">
+          <option value="manual">Manual</option>
+          <option value="gmail">Gmail</option>
+          <option value="whatsapp">WhatsApp</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Diseñador</label>
+        <select id="f-disenador">
+          <option value="">Sin asignar</option>
+          <option>Edilberto Boada</option>
+          <option>Carolina Solorzano</option>
+          <option>Jeison Amaya</option>
+          <option>Raúl Saavedra</option>
+          <option>Evelyn Rodríguez</option>
+          <option>Karol Ramos</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sm" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-sm btn-primary" onclick="guardarNueva()">Crear orden</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PIPELINE = {
+  comercial: [
+    { id:0, nombre:'Nueva solicitud',     color:'#888780', grupo:'comercial' },
+    { id:1, nombre:'Completando info',    color:'#BA7517', grupo:'comercial' },
+    { id:2, nombre:'En cotización',       color:'#185FA5', grupo:'comercial' },
+    { id:3, nombre:'Cotización enviada',  color:'#0F6E56', grupo:'comercial' },
+    { id:4, nombre:'Aprobada',            color:'#7B3FA0', grupo:'comercial' },
+  ],
+  produccion: [
+    { id:5, nombre:'Diseño',              color:'#C0392B', grupo:'produccion' },
+    { id:6, nombre:'CTP / Preprensa',     color:'#2C7A6E', grupo:'produccion' },
+    { id:7, nombre:'Impresión',           color:'#3B6D11', grupo:'produccion' },
+    { id:8, nombre:'Terminados',          color:'#534AB7', grupo:'produccion' },
+    { id:9, nombre:'Entrega',             color:'#888780', grupo:'produccion' },
+  ],
+};
+const ALL_FASES = [...PIPELINE.comercial, ...PIPELINE.produccion];
+
+const CONCEPTOS = ['Tarjetas de presentación','Volantes','Afiches','Plegables','Diplomas','Certificados','Carpetas','Stickers / Etiquetas','Empaste fino','Hojas membreteadas','Catálogo','Revista','Libro','Talonarios','Pendón / lona','Señalización','Otro'];
+const DISENADORES = ['Edilberto Boada','Carolina Solorzano','Jeison Amaya','Raúl Saavedra','Evelyn Rodríguez','Karol Ramos'];
+
+let data = [
+  { id:'PRE-5158', cliente:'Academia Boyacense', empresa:'Academia Boyacense de Historia', tipo:'Empresa', concepto:'Libros Historia General de Boyacá', fase:2, fecha:'2025-03-10', canal:'manual', disenador:'Raúl Saavedra', items:[{cant:200,tipo:'Libro',obs:'Tapa dura, 280 páginas'}] },
+  { id:'PRE-8116', cliente:'Corpoboyacá',        empresa:'Corpoboyacá',                    tipo:'Empresa', concepto:'Plegables campaña ambiental',       fase:4, fecha:'2025-03-14', canal:'gmail',   disenador:'Edilberto Boada', items:[{cant:6000,tipo:'Plegables',obs:'Papel couché 115gr'}] },
+  { id:'PRE-9124', cliente:'Búhos Editores',     empresa:'Búhos Editores Ltda.',           tipo:'Empresa', concepto:'Tarjetas enmantadas + calendario',  fase:5, fecha:'2025-03-15', canal:'manual',  disenador:'Carolina Solorzano', items:[{cant:1000,tipo:'Tarjetas de presentación',obs:'Laminado mate'}] },
+  { id:'PRE-9545', cliente:'Valentina Torres',   empresa:'Universidad Santo Tomás',        tipo:'Empresa', concepto:'Libros Componente Filogenéticos',   fase:6, fecha:'2025-03-16', canal:'gmail',   disenador:'Raúl Saavedra', items:[{cant:100,tipo:'Libro',obs:'ISBN pendiente'}] },
+  { id:'PRE-9890', cliente:'Ricardo Cano',       empresa:'Empresa Propia',                 tipo:'Persona', concepto:'Tarjetas de presentación premium',  fase:1, fecha:'2025-03-18', canal:'whatsapp',disenador:'', items:[{cant:500,tipo:'Tarjetas de presentación',obs:'Papel 350gr barniz UV'}] },
+  { id:'PRE-9923', cliente:'Grupo Nutresa',      empresa:'Grupo Nutresa S.A.',             tipo:'Empresa', concepto:'Catálogo de productos Q2 2025',     fase:0, fecha:'2025-03-20', canal:'gmail',   disenador:'', items:[] },
+  { id:'PRE-9940', cliente:'Laura Gómez',        empresa:'Almacenes Éxito',                tipo:'Empresa', concepto:'Volantes temporada descuentos',     fase:3, fecha:'2025-03-21', canal:'whatsapp',disenador:'Jeison Amaya', items:[{cant:5000,tipo:'Volantes',obs:'Full color doble cara'}] },
+  { id:'PRE-9955', cliente:'Jorge Mejía',        empresa:'Universidad Central',            tipo:'Empresa', concepto:'Diplomas grado 2025-1',             fase:7, fecha:'2025-03-19', canal:'gmail',   disenador:'Edilberto Boada', items:[{cant:320,tipo:'Diplomas',obs:'Papel pergamino 180gr'}] },
+];
+let nextN = 9960;
+let selectedId = null;
+let currentPipeline = 'comercial';
+
+function fasesVisibles() {
+  if(currentPipeline==='comercial') return PIPELINE.comercial;
+  if(currentPipeline==='produccion') return PIPELINE.produccion;
+  return ALL_FASES;
+}
+
+function setPipeline(tipo, el) {
+  currentPipeline = tipo;
+  document.querySelectorAll('.pipe-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderBoard();
+}
+
+function renderBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  const fases = fasesVisibles();
+  fases.forEach(f => {
+    const cards = data.filter(d=>d.fase===f.id);
+    const col = document.createElement('div');
+    col.className = 'kanban-col';
+    col.innerHTML = `<div class="col-header"><div class="col-header-left"><div class="col-dot" style="background:${f.color}"></div><span class="col-title">${f.nombre}</span></div><span class="col-count">${cards.length}</span></div><div class="col-cards" id="col-${f.id}"></div>`;
+    board.appendChild(col);
+    const colEl = col.querySelector('.col-cards');
+    if(cards.length===0) {
+      colEl.innerHTML = '<div class="empty-col">Sin órdenes</div>';
+    } else {
+      cards.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'kcard'+(c.id===selectedId?' selected':'');
+        card.onclick = ()=>abrirPanel(c.id);
+        const tipoBadge = `<span class="kcard-tipo-badge tipo-${c.tipo.toLowerCase()}">${c.tipo}</span>`;
+        const canalBadge = `<span class="canal-badge canal-${c.canal}">${c.canal}</span>`;
+        card.innerHTML = `
+          <div class="kcard-top"><span class="kcard-empresa">${c.empresa}</span>${tipoBadge}</div>
+          <div class="kcard-cliente">${c.cliente}</div>
+          <div class="kcard-concepto">${c.concepto.length>55?c.concepto.slice(0,55)+'…':c.concepto}</div>
+          <div class="kcard-footer"><span class="kcard-date">${c.fecha}</span>${canalBadge}</div>`;
+        colEl.appendChild(card);
+      });
+    }
+  });
+}
+
+function abrirPanel(id) {
+  selectedId = id;
+  const c = data.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('p-preorden').textContent = c.id;
+  document.getElementById('p-cliente').textContent = c.cliente;
+  document.getElementById('p-concepto').textContent = c.concepto;
+  renderPanelBody(c);
+  document.getElementById('panel').classList.add('open');
+  renderBoard();
+}
+
+function renderPanelBody(c) {
+  const comercialPills = PIPELINE.comercial.map((f,i)=>`<div class="fase-pill${c.fase===f.id?' act-'+i:''}" onclick="setFase(${f.id},${i})">${f.nombre}</div>`).join('');
+  const prodPills = PIPELINE.produccion.map((f,i)=>`<div class="fase-pill${c.fase===f.id?' act-'+(i+5):''}" onclick="setFase(${f.id},${i+5})">${f.nombre}</div>`).join('');
+  const filas = (c.items||[]).map((it,i)=>`
+    <tr>
+      <td><input type="number" value="${it.cant}" min="1" style="width:52px" onchange="updItem(${i},'cant',this.value)"/></td>
+      <td><select onchange="updItem(${i},'tipo',this.value)">${CONCEPTOS.map(t=>`<option${t===it.tipo?' selected':''}>${t}</option>`).join('')}</select></td>
+      <td><input type="text" value="${it.obs||''}" placeholder="Observación" onchange="updItem(${i},'obs',this.value)"/></td>
+      <td><button class="btn-del" onclick="delItem(${i})">×</button></td>
+    </tr>`).join('');
+  const disenadorOpts = ['<option value="">Sin asignar</option>',...DISENADORES.map(d=>`<option${d===c.disenador?' selected':''}>${d}</option>`)].join('');
+
+  document.getElementById('p-body').innerHTML = `
+    <div class="panel-section">
+      <div class="section-label">Pipeline comercial</div>
+      <div class="fase-pills">${comercialPills}</div>
+    </div>
+    <div class="panel-section">
+      <div class="section-label">Pipeline de producción</div>
+      <div class="fase-pills">${prodPills}</div>
+    </div>
+    <div class="panel-section">
+      <div class="section-label">Información</div>
+      <div class="info-grid">
+        <div class="info-cell"><div class="info-cell-label">Empresa</div><div class="info-cell-value">${c.empresa}</div></div>
+        <div class="info-cell"><div class="info-cell-label">Tipo cliente</div><div class="info-cell-value">${c.tipo}</div></div>
+        <div class="info-cell"><div class="info-cell-label">Canal</div><div class="info-cell-value">${c.canal}</div></div>
+        <div class="info-cell"><div class="info-cell-label">Fecha</div><div class="info-cell-value">${c.fecha}</div></div>
+      </div>
+    </div>
+    <div class="panel-section">
+      <div class="section-label">Diseñador a cargo</div>
+      <select class="disenador-select" onchange="updDisenador(this.value)">${disenadorOpts}</select>
+    </div>
+    <div class="panel-section">
+      <div class="items-header">
+        <span class="section-label" style="margin:0">Ítems del pedido</span>
+        <button class="btn-add" onclick="addItem()">+ Agregar ítem</button>
+      </div>
+      <table class="items-table">
+        <thead><tr><th>Cant.</th><th>Tipo de trabajo</th><th>Observaciones</th><th></th></tr></thead>
+        <tbody id="items-body">${filas}</tbody>
+      </table>
+    </div>`;
+}
+
+function setFase(faseId, colorIdx) {
+  const c = data.find(x=>x.id===selectedId);
+  if(!c) return;
+  c.fase = faseId;
+  renderPanelBody(c);
+  renderBoard();
+}
+function updItem(i,campo,val) {
+  const c = data.find(x=>x.id===selectedId);
+  if(!c||!c.items[i]) return;
+  c.items[i][campo] = campo==='cant'?parseInt(val)||1:val;
+}
+function addItem() {
+  const c = data.find(x=>x.id===selectedId);
+  if(!c) return;
+  c.items.push({cant:1,tipo:'Otro',obs:''});
+  renderPanelBody(c);
+}
+function delItem(i) {
+  const c = data.find(x=>x.id===selectedId);
+  if(!c) return;
+  c.items.splice(i,1);
+  renderPanelBody(c);
+}
+function updDisenador(val) {
+  const c = data.find(x=>x.id===selectedId);
+  if(c) c.disenador = val;
+}
+function guardar() {
+  const panel = document.getElementById('panel');
+  panel.style.borderLeftColor = '#0F6E56';
+  setTimeout(()=>{ panel.style.borderLeftColor=''; },700);
+  renderBoard();
+}
+function eliminarActual() {
+  if(!selectedId||!confirm('¿Eliminar esta orden?')) return;
+  data = data.filter(x=>x.id!==selectedId);
+  cerrarPanel();
+}
+function cerrarPanel() {
+  selectedId = null;
+  document.getElementById('panel').classList.remove('open');
+  renderBoard();
+}
+function abrirModal() { document.getElementById('modal').classList.add('open'); }
+function cerrarModal() { document.getElementById('modal').classList.remove('open'); }
+function guardarNueva() {
+  const cl = document.getElementById('f-cliente').value.trim();
+  const em = document.getElementById('f-empresa').value.trim();
+  const co = document.getElementById('f-concepto').value.trim();
+  const ti = document.getElementById('f-tipo').value;
+  const ca = document.getElementById('f-canal').value;
+  const di = document.getElementById('f-disenador').value;
+  if(!cl||!em||!co){ alert('Completa cliente, empresa y concepto.'); return; }
+  const nuevo = { id:'PRE-'+nextN++, cliente:cl, empresa:em, tipo:ti, concepto:co, fase:0, fecha:new Date().toISOString().slice(0,10), canal:ca, disenador:di, items:[] };
+  data.push(nuevo);
+  cerrarModal();
+  currentPipeline = 'comercial';
+  document.querySelectorAll('.pipe-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  renderBoard();
+  setTimeout(()=>abrirPanel(nuevo.id),50);
+}
+
+function showTab(tab, el) {
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-pipeline').classList.toggle('active', tab==='pipeline');
+  document.getElementById('tab-metricas').classList.toggle('active', tab==='metricas');
+  if(tab==='metricas') renderMetrics();
+}
+
+function renderMetrics() {
+  const total = data.length;
+  const aprobadas = data.filter(d=>d.fase>=4).length;
+  const enProd = data.filter(d=>d.fase>=5&&d.fase<=8).length;
+  const tasa = total>0?Math.round((aprobadas/total)*100):0;
+  const porFase = ALL_FASES.map(f=>({...f, count:data.filter(d=>d.fase===f.id).length}));
+  const porDisenador = {};
+  data.forEach(d=>{ if(d.disenador){ porDisenador[d.disenador]=(porDisenador[d.disenador]||0)+1; }});
+
+  document.getElementById('metrics-view').innerHTML = `
+    <div class="metrics-grid">
+      <div class="metric-card"><div class="metric-label">Total órdenes</div><div class="metric-val">${total}</div><div class="metric-sub">Todas las fases</div></div>
+      <div class="metric-card"><div class="metric-label">Aprobadas</div><div class="metric-val">${aprobadas}</div><div class="metric-sub">Comercial cerrado</div></div>
+      <div class="metric-card"><div class="metric-label">En producción</div><div class="metric-val">${enProd}</div><div class="metric-sub">Diseño → Terminados</div></div>
+      <div class="metric-card"><div class="metric-label">Tasa cierre</div><div class="metric-val">${tasa}%</div><div class="metric-sub">Aprobadas / total</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;">
+        <div class="section-label" style="margin-bottom:12px">Órdenes por fase</div>
+        ${porFase.map(f=>`
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="width:7px;height:7px;border-radius:50%;background:${f.color};flex-shrink:0"></div>
+            <div style="font-size:12px;color:var(--text);flex:1">${f.nombre}</div>
+            <div style="font-size:12px;font-family:'DM Mono',monospace;font-weight:500">${f.count}</div>
+            <div style="width:80px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden">
+              <div style="height:100%;background:${f.color};width:${total>0?Math.round((f.count/total)*100):0}%;border-radius:3px"></div>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;">
+        <div class="section-label" style="margin-bottom:12px">Carga por diseñador</div>
+        ${Object.entries(porDisenador).sort((a,b)=>b[1]-a[1]).map(([d,n])=>`
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="width:26px;height:26px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--muted);flex-shrink:0">${d.split(' ').map(x=>x[0]).join('').slice(0,2)}</div>
+            <div style="font-size:12px;color:var(--text);flex:1">${d}</div>
+            <div style="font-size:12px;font-family:'DM Mono',monospace;font-weight:500">${n}</div>
+          </div>`).join('')}
+        ${Object.keys(porDisenador).length===0?'<div style="font-size:12px;color:var(--muted);font-style:italic">Sin asignaciones aún</div>':''}
+      </div>
+    </div>`;
+}
+
+renderBoard();
+</script>
+</body>
+</html>
