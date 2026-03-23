@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Búhos CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --blue:#29ABE2;--bluedark:#1A8BBF;--bluelight:#E8F7FD;
+  --amber:#F7A800;--amberdark:#C58600;--amberlight:#FEF5DC;
+  --bg:#F4F6F8;--surface:#fff;--s2:#F0F4F7;--s3:#E4ECF1;
+  --border:#DDE4EA;--border2:#C5D0D9;
+  --text:#1A2530;--muted:#6B7E8F;--faint:#A8B8C4;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden;}
+.sidebar{width:56px;background:var(--blue);display:flex;flex-direction:column;align-items:center;padding:10px 0 14px;gap:2px;flex-shrink:0;z-index:20;}
+.sb-logo{margin-bottom:10px;padding:4px;cursor:pointer;}
+.sb-item{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.65);transition:background .12s,color .12s;position:relative;}
+.sb-item:hover{background:rgba(255,255,255,.15);color:#fff;}
+.sb-item.active{background:rgba(255,255,255,.22);color:#fff;}
+.sb-item .tip{position:absolute;left:48px;background:var(--text);color:#fff;font-size:11px;padding:4px 9px;border-radius:5px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;z-index:100;}
+.sb-item:hover .tip{opacity:1;}
+.sb-spacer{flex:1;}
+.sb-user{width:30px;height:30px;border-radius:50%;background:var(--amber);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;cursor:pointer;border:2px solid rgba(255,255,255,.3);}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.topbar{height:46px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1rem;flex-shrink:0;}
+.ptabs{display:flex;}
+.ptb{padding:0 13px;height:46px;line-height:46px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;}
+.ptb:hover{color:var(--text);}
+.ptb.active{color:var(--blue);border-bottom-color:var(--blue);}
+.btn-new{padding:7px 14px;font-size:12px;font-weight:600;background:var(--blue);color:#fff;border:none;border-radius:7px;cursor:pointer;}
+.btn-new:hover{background:var(--bluedark);}
+.workspace{display:flex;flex:1;overflow:hidden;}
+.view{display:none;flex:1;overflow:hidden;}
+.view.active{display:flex;}
+.kanban-wrap{flex:1;overflow-x:auto;overflow-y:hidden;padding:12px;}
+.kanban-board{display:flex;gap:9px;height:100%;min-width:max-content;}
+.kcol{width:214px;background:var(--surface);border-radius:10px;border:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+.kcol-hd{padding:9px 11px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.khl{display:flex;align-items:center;gap:7px;}
+.cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.ctitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+.ccount{font-size:10px;font-family:'DM Mono',monospace;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:1px 7px;color:var(--muted);}
+.kcards{padding:6px;display:flex;flex-direction:column;gap:5px;overflow-y:auto;flex:1;}
+.kcard{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 11px;cursor:pointer;transition:border-color .12s,box-shadow .12s;}
+.kcard:hover{border-color:var(--border2);box-shadow:0 2px 6px rgba(41,171,226,.08);}
+.kcard.sel{border-color:var(--blue);box-shadow:0 0 0 2px rgba(41,171,226,.15);}
+.kc1{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+.kpre{font-size:10px;font-family:'DM Mono',monospace;color:var(--faint);}
+.ktipo{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600;}
+.te{background:var(--bluelight);color:var(--bluedark);}
+.tp{background:#F3EAFA;color:#7B3FA0;}
+.kcli{font-size:12px;font-weight:700;color:var(--text);margin-bottom:1px;}
+.kemp{font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em;}
+.kdesc{font-size:11px;color:var(--muted);line-height:1.35;margin-bottom:6px;}
+.kchips{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px;}
+.chip{font-size:9px;padding:2px 6px;border-radius:3px;background:var(--s2);border:1px solid var(--border);color:var(--muted);}
+.kfoot{display:flex;align-items:center;justify-content:space-between;}
+.kdate{font-size:10px;font-family:'DM Mono',monospace;color:var(--faint);}
+.kbadges{display:flex;gap:4px;align-items:center;}
+.cbadge{font-size:9px;padding:2px 6px;border-radius:3px;font-weight:600;}
+.cg{background:#FDECEB;color:#C0392B;}.cw{background:#E1F5EE;color:#0F6E56;}.cll{background:var(--amberlight);color:var(--amberdark);}.cm{background:var(--s2);color:var(--muted);border:1px solid var(--border);}
+.kby{font-size:10px;color:var(--faint);font-style:italic;}
+.empty-col{font-size:11px;color:var(--muted);text-align:center;padding:22px 8px;opacity:.4;font-style:italic;}
+.panel{width:0;overflow:hidden;background:var(--surface);border-left:1px solid var(--border);transition:width .2s ease;flex-shrink:0;display:flex;flex-direction:column;}
+.panel.open{width:375px;}
+.phd{padding:13px 15px 10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.ppre{font-size:10px;font-family:'DM Mono',monospace;color:var(--faint);margin-bottom:3px;}
+.prow{display:flex;justify-content:space-between;align-items:flex-start;}
+.pcli{font-size:15px;font-weight:700;color:var(--text);}
+.pemp{font-size:11px;color:var(--muted);margin-top:2px;}
+.xbtn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:17px;line-height:1;padding:0;margin-left:8px;}
+.xbtn:hover{color:var(--text);}
+.panel-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.ptab{flex:1;padding:8px 0;font-size:11px;font-weight:600;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;text-transform:uppercase;letter-spacing:.05em;}
+.ptab:hover{color:var(--text);}
+.ptab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.pbody{flex:1;overflow-y:auto;padding:13px 15px;}
+.psec{margin-bottom:15px;}
+.slbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:7px;}
+.fpills{display:flex;flex-wrap:wrap;gap:4px;}
+.fp{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid var(--border);cursor:pointer;color:var(--muted);background:var(--s2);white-space:nowrap;}
+.fp:hover{border-color:var(--border2);}
+.fp.on0{background:var(--s3);border-color:#6B7E8F;color:#3A5060;}
+.fp.on1{background:var(--amberlight);border-color:var(--amber);color:var(--amberdark);}
+.fp.on2{background:var(--bluelight);border-color:var(--blue);color:var(--bluedark);}
+.fp.on3{background:#E1F5EE;border-color:#0F6E56;color:#085041;}
+.fp.on4{background:#F3EAFA;border-color:#7B3FA0;color:#4A1F6E;}
+.fp.on5{background:#FDECEB;border-color:#C0392B;color:#7A1F17;}
+.fp.on6{background:#E0F2EF;border-color:#2C7A6E;color:#1A4F49;}
+.fp.on7{background:#EAF3DE;border-color:#3B6D11;color:#27500A;}
+.fp.on8{background:#EEEDFE;border-color:#534AB7;color:#3C3489;}
+.fp.on9{background:var(--s3);border-color:#6B7E8F;color:#3A5060;}
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.icell{background:var(--s2);border-radius:7px;padding:8px 10px;}
+.iclbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px;}
+.icval{font-size:12px;color:var(--text);font-weight:600;}
+.prodcard{background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:9px 11px;margin-bottom:7px;}
+.prodname{font-size:12px;font-weight:700;margin-bottom:5px;color:var(--text);}
+.prodspecs{display:flex;flex-wrap:wrap;gap:4px;}
+.pspec{font-size:10px;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:2px 6px;color:var(--muted);}
+.fsel{width:100%;padding:6px 9px;border:1px solid var(--border);border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;}
+.fsel:focus{border-color:var(--blue);}
+.hitem{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);}
+.hitem:last-child{border-bottom:none;}
+.hdwrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:3px;}
+.hdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.hline{width:1px;background:var(--border);flex:1;margin-top:4px;}
+.hbody{flex:1;}
+.htxt{font-size:12px;color:var(--text);line-height:1.4;margin-bottom:2px;}
+.hmeta{font-size:10px;color:var(--muted);display:flex;gap:8px;}
+.hnota{font-size:11px;color:var(--text);background:var(--bluelight);border-radius:5px;padding:6px 9px;margin-top:5px;line-height:1.45;border-left:2px solid var(--blue);}
+.notawrap textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;resize:none;min-height:76px;background:var(--surface);color:var(--text);outline:none;}
+.notawrap textarea:focus{border-color:var(--blue);}
+.notafoot{display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
+.notahint{font-size:11px;color:var(--muted);}
+.pfoot{padding:9px 15px;border-top:1px solid var(--border);display:flex;gap:6px;flex-shrink:0;}
+.spacer{flex:1;}
+.bsm{padding:6px 13px;font-size:11px;font-weight:600;border:1px solid var(--border2);border-radius:7px;background:var(--surface);color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;}
+.bsm:hover{background:var(--s2);}
+.bdanger{color:#C0392B;border-color:#f5c0bb;}.bdanger:hover{background:#FDECEB;}
+.bprimary{background:var(--blue);color:#fff;border-color:var(--blue);}.bprimary:hover{background:var(--bluedark);}
+.wov{display:none;position:fixed;inset:0;background:rgba(10,20,30,.55);z-index:200;align-items:flex-start;justify-content:center;padding-top:36px;overflow-y:auto;}
+.wov.open{display:flex;}
+.wmod{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:600px;max-width:96vw;box-shadow:0 20px 60px rgba(0,0,0,.2);margin-bottom:40px;}
+.whd{padding:1.25rem 1.5rem 0;}
+.wsteps{display:flex;gap:3px;margin-bottom:.7rem;}
+.wst{flex:1;height:3px;background:var(--s3);border-radius:2px;transition:background .2s;}
+.wst.done{background:var(--blue);}
+.wst.cur{background:var(--blue);opacity:.45;}
+.wslbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.3rem;}
+.wtitle{font-size:16px;font-weight:700;margin-bottom:1rem;color:var(--text);}
+.wbody{padding:0 1.5rem;}
+.wfoot{padding:.875rem 1.5rem 1.25rem;display:flex;gap:8px;justify-content:space-between;border-top:1px solid var(--border);margin-top:1rem;}
+.fg{margin-bottom:10px;}
+.fl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:4px;}
+.fg input,.fg select,.fg textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue);}
+.fg textarea{min-height:62px;resize:vertical;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.pwiz{background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:12px 14px;margin-bottom:10px;}
+.pwiz-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.pwiz-num{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+.bxdel{background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted);padding:0;}.bxdel:hover{color:#C0392B;}
+.btn-addp{display:flex;align-items:center;gap:6px;padding:8px 12px;font-size:12px;font-weight:600;border:1.5px dashed var(--border2);border-radius:8px;background:none;cursor:pointer;color:var(--muted);width:100%;justify-content:center;margin-top:4px;font-family:'DM Sans',sans-serif;}
+.btn-addp:hover{background:var(--s2);color:var(--blue);border-color:var(--blue);}
+.psearch{position:relative;}
+.psinp{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;}
+.psinp:focus{border-color:var(--blue);}
+.psdrop{position:absolute;top:calc(100% + 3px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:9px;box-shadow:0 8px 28px rgba(0,0,0,.13);z-index:400;max-height:200px;overflow-y:auto;display:none;}
+.psdrop.open{display:block;}
+.psitem{padding:8px 11px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.psitem:hover{background:var(--bluelight);}
+.psname{color:var(--text);font-weight:500;}
+.pscode{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);}
+.psnew{padding:9px 11px;font-size:12px;cursor:pointer;color:var(--blue);font-weight:700;border-top:1px solid var(--border);display:flex;align-items:center;gap:6px;}
+.psnew:hover{background:var(--bluelight);}
+.psempty{padding:11px;font-size:12px;color:var(--muted);text-align:center;}
+.pstag{display:inline-flex;align-items:center;gap:5px;background:var(--bluelight);border:1px solid var(--blue);border-radius:5px;padding:3px 9px;font-size:11px;font-weight:600;color:var(--bluedark);margin-bottom:7px;}
+.pstag button{background:none;border:none;cursor:pointer;color:var(--blue);font-size:13px;padding:0;line-height:1;}
+.mview{padding:1.25rem;overflow-y:auto;flex:1;}
+.mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem;}
+.mcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.mlbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px;}
+.mval{font-size:28px;font-weight:700;font-family:'DM Mono',monospace;color:var(--text);}
+.msub{font-size:11px;color:var(--muted);margin-top:3px;}
+.mcard.accent .mval{color:var(--blue);}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sb-logo">
+    <svg width="32" height="36" viewBox="0 0 32 36" fill="none">
+      <ellipse cx="16" cy="18" rx="13" ry="14" fill="white" opacity=".15"/>
+      <circle cx="11" cy="16" r="5" fill="white" opacity=".9"/>
+      <circle cx="21" cy="16" r="5" fill="white" opacity=".9"/>
+      <circle cx="11" cy="16" r="2.5" fill="#29ABE2"/>
+      <circle cx="21" cy="16" r="2.5" fill="#29ABE2"/>
+      <circle cx="11.8" cy="15.2" r="1" fill="white"/>
+      <circle cx="21.8" cy="15.2" r="1" fill="white"/>
+      <polygon points="16,7 14,11 18,11" fill="#F7A800"/>
+      <ellipse cx="16" cy="23" rx="8" ry="4" fill="white" opacity=".6"/>
+      <path d="M5 18 Q3 22 5 26 Q8 28 10 26" fill="white" opacity=".35"/>
+      <path d="M27 18 Q29 22 27 26 Q24 28 22 26" fill="white" opacity=".35"/>
+    </svg>
+  </div>
+  <div class="sb-item active" onclick="showView('pipeline',this)">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1.5"/><rect x="14" y="3" width="7" height="11" rx="1.5"/><rect x="14" y="17" width="7" height="4" rx="1.5"/></svg>
+    <span class="tip">Pipeline</span>
+  </div>
+  <div class="sb-item" onclick="showView('metricas',this)">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span class="tip">Métricas</span>
+  </div>
+  <div class="sb-spacer"></div>
+  <div class="sb-user" title="Daisy Herrera">DH</div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <div class="ptabs" id="ptabs">
+      <div class="ptb active" onclick="setPipe('comercial',this)">Comercial</div>
+      <div class="ptb" onclick="setPipe('produccion',this)">Producción</div>
+      <div class="ptb" onclick="setPipe('todo',this)">Todo</div>
+    </div>
+    <button class="btn-new" onclick="openWizard()">+ Nueva cotización</button>
+  </div>
+
+  <div id="view-pipeline" class="view active">
+    <div class="workspace">
+      <div class="kanban-wrap"><div class="kanban-board" id="board"></div></div>
+      <div class="panel" id="panel">
+        <div class="phd">
+          <div class="ppre" id="p-pre"></div>
+          <div class="prow">
+            <div><div class="pcli" id="p-cli"></div><div class="pemp" id="p-emp"></div></div>
+            <button class="xbtn" onclick="closePanel()">×</button>
+          </div>
+        </div>
+        <div class="panel-tabs">
+          <div class="ptab active" onclick="setPTab('detalle',this)">Detalle</div>
+          <div class="ptab" onclick="setPTab('historial',this)">Historial</div>
+          <div class="ptab" onclick="setPTab('notas',this)">Notas</div>
+        </div>
+        <div class="pbody" id="pbody"></div>
+        <div class="pfoot">
+          <button class="bsm bdanger" onclick="deleteSel()">Eliminar</button>
+          <div class="spacer"></div>
+          <button class="bsm" onclick="closePanel()">Cerrar</button>
+          <button class="bsm bprimary" onclick="savePanel()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-metricas" class="view">
+    <div class="mview" id="mview"></div>
+  </div>
+</div>
+
+<div class="wov" id="wizard">
+  <div class="wmod">
+    <div class="whd">
+      <div class="wsteps" id="wsteps"></div>
+      <div class="wslbl" id="wlbl"></div>
+      <div class="wtitle" id="wtitle"></div>
+    </div>
+    <div class="wbody" id="wbody"></div>
+    <div class="wfoot">
+      <button class="bsm" id="wback" onclick="wBack()">Atrás</button>
+      <button class="bsm bprimary" id="wnext" onclick="wNext()">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATALOGO=[{"c":"C-018","n":"AFICHES"},{"c":"AFI02","n":"AFICHES 1/2 PLIEGO"},{"c":"AFI03","n":"AFICHES 1/3 PLIEGO"},{"c":"AFI04","n":"AFICHES 1/4 PLIEGO"},{"c":"AFI01","n":"AFICHES IMPRESION DIGITAL"},{"c":"AFI00","n":"AFICHES OTROS"},{"c":"C-016","n":"AGENDAS"},{"c":"AGE03","n":"AGENDAS PASTA ACOLCHADA"},{"c":"AGE01","n":"AGENDAS PASTA BLANDA"},{"c":"AGE02","n":"AGENDAS PASTA DURA"},{"c":"BAN01","n":"BANDERINES"},{"c":"C-007","n":"BANNER"},{"c":"BOLE01","n":"BOLETIN"},{"c":"C-010","n":"BOLIGRAFO"},{"c":"BON01","n":"BONOS"},{"c":"C-017","n":"BOTELLA DEPORTIVA"},{"c":"BTN01","n":"BOTONES PUBLICITARIOS"},{"c":"CAJ02","n":"CAJAS DE ARCHIVO"},{"c":"CAL03","n":"CALENDARIO ESCRITORIO ARGOLLADO"},{"c":"CAL02","n":"CALENDARIO ESCRITORIO TRIANGULO"},{"c":"CAL01","n":"CALENDARIO PARED"},{"c":"CAL05","n":"CALENDARIOS VARIOS"},{"c":"DIP04","n":"CALIGRAFÍA LÁSER"},{"c":"CAM01","n":"CAMISAS"},{"c":"CAM02","n":"CAMISETAS"},{"c":"CNE01","n":"CARNE - CARNET"},{"c":"CAR01","n":"CARPETAS 4 X 0"},{"c":"CAR02","n":"CARPETAS 4 X 4"},{"c":"CAR04","n":"CARPETAS DE ARCHIVO"},{"c":"CAR03","n":"CARPETAS OTRAS"},{"c":"C-047","n":"CARPETAS TAPA CONTRA TAPA"},{"c":"CER01","n":"CERTIFICADOS CARTA"},{"c":"CER02","n":"CERTIFICADOS OTROS TAMAÑOS"},{"c":"CHA02","n":"CHALECOS"},{"c":"CHA01","n":"CHAQUETAS"},{"c":"CIN01","n":"CINTURONES / CENEFAS"},{"c":"CUA03","n":"CUADERNOS PASTA ACOLCHADA"},{"c":"CUA01","n":"CUADERNOS PASTA BLANDA"},{"c":"CUA02","n":"CUADERNOS PASTA DURA"},{"c":"DIP01","n":"DIPLOMAS CON 2 ACTAS"},{"c":"DIP02","n":"DIPLOMAS CON FONDO DE SEGURIDAD"},{"c":"DIP03","n":"DIPLOMAS SIN FONDO DE SEGURIDAD"},{"c":"EMP03","n":"EMPASTE ARREGLO LIBRO"},{"c":"EMP02","n":"EMPASTE DE ARCHIVO / CONTABLE"},{"c":"EMP04","n":"EMPASTE ENCICLOPEDIA"},{"c":"EMP01","n":"EMPASTE FINO"},{"c":"EMP06","n":"EMPASTE OTROS"},{"c":"EMP05","n":"EMPASTE SENCILLO"},{"c":"C-021","n":"ESCARAPELAS"},{"c":"ESF02","n":"ESFERO ECOLÓGICO"},{"c":"ESF03","n":"ESFERO METÁLICO"},{"c":"ESF01","n":"ESFERO PLÁSTICO"},{"c":"ETI01","n":"ETIQUETAS ADHESIVAS"},{"c":"ETI03","n":"ETIQUETAS OTRAS"},{"c":"ETI02","n":"ETIQUETAS PAPEL"},{"c":"FOL01","n":"FOLLETOS Y CARTILLAS"},{"c":"HOJ04","n":"HOJAS / MEMBRETES 4 TINTAS"},{"c":"HOJ02","n":"HOJAS / MEMBRETES 2 TINTAS"},{"c":"HOJ03","n":"HOJAS / MEMBRETES 3 TINTAS"},{"c":"HOJ01","n":"HOJAS / MEMBRETES 1 TINTA"},{"c":"HOJ05","n":"HOJAS VARIOS"},{"c":"APU02","n":"LIBRETAS ARGOLLADAS"},{"c":"APU01","n":"LIBRETAS ENGOMADAS"},{"c":"APU04","n":"LIBRETAS OTRAS"},{"c":"APU03","n":"LIBRETAS PASTA DURA"},{"c":"LIB04","n":"LIBROS OTROS"},{"c":"LIBI04","n":"LIBROS OTROS CON ISBN"},{"c":"LIB03","n":"LIBROS TAPA ACOLCHADA"},{"c":"LIBI03","n":"LIBROS TAPA ACOLCHADA CON ISBN"},{"c":"LIB01","n":"LIBROS TAPA BLANDA"},{"c":"LIBI01","n":"LIBROS TAPA BLANDA CON ISBN"},{"c":"LIB05","n":"LIBROS TAPA BLANDA DIGITAL"},{"c":"LIB02","n":"LIBROS TAPA DURA"},{"c":"LIBI02","n":"LIBROS TAPA DURA CON ISBN"},{"c":"LIB06","n":"LIBROS TAPA DURA DIGITAL"},{"c":"MAN01","n":"MANILLAS"},{"c":"BOLK03","n":"MOCHILAS KAMBREL"},{"c":"BOLP03","n":"MOCHILAS POLIESTER"},{"c":"MUG01","n":"MUG CERÁMICA 11 OZ"},{"c":"MUG03","n":"MUG CERÁMICA 6 OZ"},{"c":"MUG02","n":"MUG CERÁMICA 9 OZ"},{"c":"C-009","n":"MUG PERSONALIZADO"},{"c":"OTR01","n":"OTROS"},{"c":"C-004","n":"PENDON"},{"c":"PEN02","n":"PENDON CON OJALETE"},{"c":"PEN01","n":"PENDON CON TUBO"},{"c":"PEN03","n":"PENDÓN ARAÑA"},{"c":"PEN05","n":"PENDÓN OTROS"},{"c":"PEN04","n":"PENDÓN ROLLUP"},{"c":"PLE03","n":"PLEGABLES 1/2 PLIEGO"},{"c":"PLE01","n":"PLEGABLES CARTA"},{"c":"PLE02","n":"PLEGABLES OFICIO"},{"c":"PLE04","n":"PLEGABLES OTRO"},{"c":"POR03","n":"PORTADIPLOMAS ACOLCHADOS"},{"c":"POR04","n":"PORTADIPLOMAS PASTA BLANDA"},{"c":"POR02","n":"PORTADIPLOMAS PASTA DURA IMPRESA"},{"c":"POR01","n":"PORTADIPLOMAS PASTA DURA SINTÉTICO"},{"c":"REC01","n":"RECONOCIMIENTOS / PLACAS"},{"c":"REV01","n":"REVISTAS COSIDAS"},{"c":"REVI01","n":"REVISTAS COSIDAS CON ISSN"},{"c":"REV02","n":"REVISTAS ENCOLADAS"},{"c":"REVI02","n":"REVISTAS ENCOLADAS CON ISSN"},{"c":"C-006","n":"STICKER"},{"c":"TAC02","n":"TACOS PUBLICITARIOS CAJA"},{"c":"TAC01","n":"TACOS PUBLICITARIOS ENGOMADOS"},{"c":"TAC03","n":"TACOS PUBLICITARIOS OTROS"},{"c":"TALF01","n":"TALONARIOS FACTURA 1/2 CARTA"},{"c":"TALF02","n":"TALONARIOS FACTURA 1/2 OFICIO"},{"c":"TALF03","n":"TALONARIOS FACTURA CARTA"},{"c":"TALV05","n":"TALONARIOS VARIOS 1/2 CARTA"},{"c":"TALV06","n":"TALONARIOS VARIOS 1/2 OFICIO"},{"c":"TALV07","n":"TALONARIOS VARIOS CARTA"},{"c":"TALV08","n":"TALONARIOS VARIOS OTROS"},{"c":"TAR02","n":"TARJETAS DE INVITACIÓN"},{"c":"TAR01","n":"TARJETAS DE PRESENTACIÓN"},{"c":"TAR03","n":"TARJETAS IMANTADAS"},{"c":"C-043","n":"TARJETAS INMANTADAS"},{"c":"TAR05","n":"TARJETAS OTRAS"},{"c":"TAR04","n":"TARJETAS POSTALES"},{"c":"C-042","n":"TARJETAS UV"},{"c":"TAR07","n":"TARJETONES"},{"c":"C-014","n":"VALLA"},{"c":"VAL01","n":"VALLAS"},{"c":"C-008","n":"VINILO"},{"c":"VIT01","n":"VITELAS / SEPARADORES"},{"c":"VOL10","n":"VOLANTES 1 X 0"},{"c":"VOL11","n":"VOLANTES 1 X 1"},{"c":"VOL20","n":"VOLANTES 2 X 0"},{"c":"VOL22","n":"VOLANTES 2 X 2"},{"c":"VOL30","n":"VOLANTES 3 X 0"},{"c":"VOL33","n":"VOLANTES 3 X 3"},{"c":"VOL40","n":"VOLANTES 4 X 0"},{"c":"VOL44","n":"VOLANTES 4 X 4"}];
+const EQUIPO=['Diana','Evelyn Rodríguez','Bertha Herrera','Edilberto Boada','Carolina Solorzano','Jeison Amaya','Raúl Saavedra','Karol Ramos','Otro'];
+const DISENADORES=['Edilberto Boada','Carolina Solorzano','Jeison Amaya','Raúl Saavedra','Evelyn Rodríguez','Karol Ramos'];
+const PAPELES=['Bond / offset','Propalcote / couché','Pergamino','Opalina','Kraft','Cartulina','Papel adhesivo','Book cream','Lino','Otro'];
+const TAMANOS=['A3','A4','A5','A6','Carta','Oficio','Media carta','1/2 pliego','Pliego completo','Personalizado'];
+const DISENOS=['El cliente trae diseño','Diseño incluido (Búhos)','Diseño por aprobar'];
+const TINTAS=['1x0','1x1','2x0','2x2','3x0','3x3','4x0','4x4','Digital'];
+const FC=[{id:0,n:'Nueva solicitud',c:'#6B7E8F'},{id:1,n:'Completando info',c:'#F7A800'},{id:2,n:'En cotización',c:'#29ABE2'},{id:3,n:'Cotización enviada',c:'#0F6E56'},{id:4,n:'Aprobada',c:'#7B3FA0'}];
+const FP=[{id:5,n:'Diseño',c:'#C0392B'},{id:6,n:'CTP / Preprensa',c:'#2C7A6E'},{id:7,n:'Impresión',c:'#3B6D11'},{id:8,n:'Terminados',c:'#534AB7'},{id:9,n:'Entrega',c:'#6B7E8F'}];
+const AF=[...FC,...FP];
+const gf=id=>AF.find(f=>f.id===id)||AF[0];
+let currentUser='Daisy Herrera',selId=null,curPipe='comercial',panelTab='detalle';
+let data=[
+  {id:'PRE-5158',cliente:'Academia Boyacense',empresa:'Academia Boyacense de Historia',nit:'800123456',tipo:'Empresa',desc:'Libros Historia General de Boyacá',fase:2,fecha:'2025-03-10',canal:'gmail',atendio:'',creadoPor:'Evelyn Rodríguez',disenador:'Raúl Saavedra',
+   productos:[{prod:{c:'LIB02',n:'LIBROS TAPA DURA'},cant:200,tintas:'4x4',paginas:'280',papel:'Propalcote / couché',diseno:'Diseño por aprobar',tamano:'Carta',obs:'ISBN pendiente'}],
+   historial:[{ts:'2025-03-10 09:14',tipo:'creacion',txt:'Orden creada',autor:'Evelyn Rodríguez',color:'#29ABE2'},{ts:'2025-03-10 09:14',tipo:'auto',txt:'Canal: Gmail',autor:'Sistema',color:'#6B7E8F'},{ts:'2025-03-11 14:22',tipo:'fase',txt:'Fase → En cotización',autor:'Evelyn Rodríguez',color:'#29ABE2'}]},
+  {id:'PRE-8116',cliente:'Corpoboyacá',empresa:'Corpoboyacá',nit:'891780185',tipo:'Empresa',desc:'Plegables campaña ambiental Q2',fase:4,fecha:'2025-03-14',canal:'llamada',atendio:'Diana',creadoPor:'Diana',disenador:'Edilberto Boada',
+   productos:[{prod:{c:'PLE01',n:'PLEGABLES CARTA'},cant:6000,tintas:'4x4',paginas:'4',papel:'Propalcote / couché',diseno:'Diseño por aprobar',tamano:'Carta',obs:'Couché 115gr'}],
+   historial:[{ts:'2025-03-14 10:05',tipo:'creacion',txt:'Orden creada',autor:'Diana',color:'#29ABE2'},{ts:'2025-03-14 10:05',tipo:'auto',txt:'Canal: Llamada — atendió Diana',autor:'Sistema',color:'#6B7E8F'},{ts:'2025-03-15 11:30',tipo:'fase',txt:'Fase → Aprobada',autor:'Diana',color:'#7B3FA0'},{ts:'2025-03-15 11:31',tipo:'auto',txt:'Cotización aprobada por el cliente',autor:'Sistema',color:'#7B3FA0'},{ts:'2025-03-16 09:00',tipo:'nota',txt:'Cliente confirmó pago 50% anticipo. Iniciar producción.',autor:'Daisy Herrera',color:'#F7A800'}]},
+  {id:'PRE-9124',cliente:'Búhos Editores',empresa:'Búhos Editores Ltda.',nit:'900344848',tipo:'Empresa',desc:'Tarjetas enmantadas + calendario',fase:5,fecha:'2025-03-15',canal:'manual',atendio:'',creadoPor:'Daisy Herrera',disenador:'Carolina Solorzano',
+   productos:[{prod:{c:'TAR01',n:'TARJETAS DE PRESENTACIÓN'},cant:1000,tintas:'4x4',paginas:'1',papel:'Opalina',diseno:'El cliente trae diseño',tamano:'A6',obs:'Laminado mate'}],
+   historial:[{ts:'2025-03-15 08:30',tipo:'creacion',txt:'Orden creada manualmente',autor:'Daisy Herrera',color:'#29ABE2'},{ts:'2025-03-18 14:00',tipo:'fase',txt:'Fase → Diseño',autor:'Carolina Solorzano',color:'#C0392B'}]},
+  {id:'PRE-9890',cliente:'Ricardo Cano',empresa:'Empresa Propia',nit:'',tipo:'Persona',desc:'Tarjetas de presentación premium',fase:1,fecha:'2025-03-18',canal:'whatsapp',atendio:'',creadoPor:'Bertha Herrera',disenador:'',
+   productos:[{prod:{c:'TAR01',n:'TARJETAS DE PRESENTACIÓN'},cant:500,tintas:'4x0',paginas:'1',papel:'Bond / offset',diseno:'Diseño incluido (Búhos)',tamano:'A6',obs:'350gr barniz UV'}],
+   historial:[{ts:'2025-03-18 16:45',tipo:'creacion',txt:'Orden creada',autor:'Bertha Herrera',color:'#29ABE2'},{ts:'2025-03-18 16:45',tipo:'auto',txt:'Canal: WhatsApp',autor:'Sistema',color:'#6B7E8F'}]},
+  {id:'PRE-9923',cliente:'Grupo Nutresa',empresa:'Grupo Nutresa S.A.',nit:'890903247',tipo:'Empresa',desc:'Catálogo de productos Q2 2025',fase:0,fecha:'2025-03-20',canal:'gmail',atendio:'',creadoPor:'Evelyn Rodríguez',disenador:'',
+   productos:[],historial:[{ts:'2025-03-20 11:00',tipo:'creacion',txt:'Orden creada',autor:'Evelyn Rodríguez',color:'#29ABE2'},{ts:'2025-03-20 11:00',tipo:'auto',txt:'Canal: Gmail',autor:'Sistema',color:'#6B7E8F'}]},
+  {id:'PRE-9955',cliente:'Jorge Mejía',empresa:'Universidad Central',nit:'860007386',tipo:'Empresa',desc:'Diplomas grado 2025-1',fase:7,fecha:'2025-03-19',canal:'gmail',atendio:'',creadoPor:'Diana',disenador:'Edilberto Boada',
+   productos:[{prod:{c:'DIP02',n:'DIPLOMAS CON FONDO DE SEGURIDAD'},cant:320,tintas:'4x4',paginas:'1',papel:'Pergamino',diseno:'El cliente trae diseño',tamano:'Carta',obs:'Pergamino 180gr'}],
+   historial:[{ts:'2025-03-19 09:00',tipo:'creacion',txt:'Orden creada',autor:'Diana',color:'#29ABE2'},{ts:'2025-03-21 08:30',tipo:'auto',txt:'Cotización enviada al cliente',autor:'Sistema',color:'#0F6E56'},{ts:'2025-03-22 09:10',tipo:'auto',txt:'Cotización aprobada por el cliente',autor:'Sistema',color:'#7B3FA0'},{ts:'2025-03-22 09:11',tipo:'fase',txt:'Fase → Impresión',autor:'Edilberto Boada',color:'#3B6D11'}]},
+];
+let nextN=9960;
+
+function showView(v,el){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('ptabs').style.display=v==='pipeline'?'flex':'none';
+  if(v==='metricas') renderMetrics();
+}
+function setPipe(p,el){curPipe=p;document.querySelectorAll('.ptb').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderBoard();}
+function fasesVis(){return curPipe==='comercial'?FC:curPipe==='produccion'?FP:AF;}
+
+function renderBoard(){
+  const board=document.getElementById('board');board.innerHTML='';
+  fasesVis().forEach(f=>{
+    const cards=data.filter(d=>d.fase===f.id);
+    const col=document.createElement('div');col.className='kcol';
+    col.innerHTML=`<div class="kcol-hd"><div class="khl"><div class="cdot" style="background:${f.c}"></div><span class="ctitle">${f.n}</span></div><span class="ccount">${cards.length}</span></div><div class="kcards" id="col-${f.id}"></div>`;
+    board.appendChild(col);
+    const colEl=col.querySelector('.kcards');
+    if(!cards.length){colEl.innerHTML='<div class="empty-col">Sin órdenes</div>';return;}
+    cards.forEach(c=>{
+      const el=document.createElement('div');
+      el.className='kcard'+(c.id===selId?' sel':'');
+      el.onclick=()=>openPanel(c.id);
+      const cb=c.canal==='gmail'?'cg':c.canal==='whatsapp'?'cw':c.canal==='llamada'?'cll':'cm';
+      const cbTxt=c.canal==='llamada'?'Llamada'+(c.atendio?' · '+c.atendio.split(' ')[0]:''):c.canal;
+      const chips=c.productos.slice(0,2).map(p=>`<span class="chip">${p.prod.n.split(' ').slice(0,3).join(' ')}</span>`).join('')+(c.productos.length>2?`<span class="chip">+${c.productos.length-2}</span>`:'');
+      el.innerHTML=`
+        <div class="kc1"><span class="kpre">${c.id}</span><span class="ktipo ${c.tipo==='Empresa'?'te':'tp'}">${c.tipo}</span></div>
+        <div class="kcli">${c.cliente}</div>
+        <div class="kemp">${c.empresa}</div>
+        <div class="kdesc">${c.desc.length>58?c.desc.slice(0,58)+'…':c.desc}</div>
+        ${chips?`<div class="kchips">${chips}</div>`:''}
+        <div class="kfoot"><span class="kdate">${c.fecha}</span><div class="kbadges"><span class="cbadge ${cb}">${cbTxt}</span>${c.creadoPor?`<span class="kby">${c.creadoPor.split(' ')[0]}</span>`:''}</div></div>`;
+      colEl.appendChild(el);
+    });
+  });
+}
+
+function openPanel(id){
+  selId=id;const c=data.find(x=>x.id===id);if(!c)return;
+  document.getElementById('p-pre').textContent=c.id+' · '+c.fecha;
+  document.getElementById('p-cli').textContent=c.cliente;
+  document.getElementById('p-emp').textContent=c.empresa+(c.nit?' · NIT '+c.nit:'');
+  panelTab='detalle';
+  document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  renderPBody(c);document.getElementById('panel').classList.add('open');renderBoard();
+}
+function setPTab(tab,el){panelTab=tab;document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));el.classList.add('active');const c=data.find(x=>x.id===selId);if(c)renderPBody(c);}
+function renderPBody(c){if(panelTab==='detalle')renderDetalle(c);else if(panelTab==='historial')renderHistorial(c);else renderNotas(c);}
+
+function renderDetalle(c){
+  const cP=FC.map((f,i)=>`<div class="fp${c.fase===f.id?' on'+i:''}" onclick="setFase(${f.id},${i})">${f.n}</div>`).join('');
+  const pP=FP.map((f,i)=>`<div class="fp${c.fase===f.id?' on'+(i+5):''}" onclick="setFase(${f.id},${i+5})">${f.n}</div>`).join('');
+  const prods=(c.productos||[]).map(p=>`<div class="prodcard"><div class="prodname">${p.prod.n} <span style="font-size:10px;color:var(--muted);font-weight:400">${p.prod.c}</span></div><div class="prodspecs"><span class="pspec">Cant: ${p.cant}</span><span class="pspec">Tintas: ${p.tintas}</span>${p.paginas?`<span class="pspec">Págs: ${p.paginas}</span>`:''}<span class="pspec">${p.papel}</span><span class="pspec">${p.tamano}</span><span class="pspec">${p.diseno}</span>${p.obs?`<span class="pspec">${p.obs}</span>`:''}</div></div>`).join('');
+  const dO=['<option value="">Sin asignar</option>',...DISENADORES.map(d=>`<option${d===c.disenador?' selected':''}>${d}</option>`)].join('');
+  document.getElementById('pbody').innerHTML=`
+    <div class="psec"><div class="slbl">Pipeline comercial</div><div class="fpills">${cP}</div></div>
+    <div class="psec"><div class="slbl">Pipeline producción</div><div class="fpills">${pP}</div></div>
+    <div class="psec"><div class="slbl">Información</div>
+      <div class="igrid">
+        <div class="icell"><div class="iclbl">Empresa</div><div class="icval">${c.empresa}</div></div>
+        <div class="icell"><div class="iclbl">NIT</div><div class="icval">${c.nit||'—'}</div></div>
+        <div class="icell"><div class="iclbl">Canal</div><div class="icval">${c.canal==='llamada'?'Llamada'+(c.atendio?' · '+c.atendio:''):c.canal}</div></div>
+        <div class="icell"><div class="iclbl">Creado por</div><div class="icval">${c.creadoPor||'—'}</div></div>
+      </div>
+    </div>
+    <div class="psec"><div class="slbl">Diseñador</div><select class="fsel" onchange="updDis(this.value)">${dO}</select></div>
+    <div class="psec"><div class="slbl" style="margin-bottom:8px">Productos (${c.productos.length})</div>${prods||'<div style="font-size:12px;color:var(--muted);font-style:italic">Sin productos</div>'}</div>`;
+}
+
+function renderHistorial(c){
+  const items=(c.historial||[]).slice().reverse().map((h,i,arr)=>`
+    <div class="hitem">
+      <div class="hdwrap"><div class="hdot" style="background:${h.color}"></div>${i<arr.length-1?'<div class="hline"></div>':''}</div>
+      <div class="hbody">
+        <div class="htxt">${h.txt}</div>
+        <div class="hmeta"><span>${h.autor}</span><span>${h.ts}</span></div>
+        ${h.tipo==='nota'?`<div class="hnota">${h.txt}</div>`:''}
+      </div>
+    </div>`).join('');
+  document.getElementById('pbody').innerHTML=`<div class="psec"><div class="slbl">Historial</div>${items||'<div style="font-size:12px;color:var(--muted);font-style:italic">Sin actividad</div>'}</div>`;
+}
+
+function renderNotas(c){
+  const prev=(c.historial||[]).filter(h=>h.tipo==='nota').slice().reverse().map(h=>`<div style="margin-bottom:10px"><div class="hnota">${h.txt}</div><div style="font-size:10px;color:var(--muted);margin-top:3px;display:flex;gap:8px"><span>${h.autor}</span><span>${h.ts}</span></div></div>`).join('');
+  document.getElementById('pbody').innerHTML=`
+    <div class="psec"><div class="slbl">Nueva nota</div>
+      <div class="notawrap">
+        <textarea id="nota-txt" placeholder="Escribe una nota sobre esta orden..."></textarea>
+        <div class="notafoot"><span class="notahint">Se registrará como ${currentUser}</span><button class="bsm bprimary" onclick="guardarNota()">Guardar nota</button></div>
+      </div>
+    </div>
+    <div class="psec"><div class="slbl">Notas anteriores</div>${prev||'<div style="font-size:12px;color:var(--muted);font-style:italic">Sin notas aún</div>'}</div>`;
+}
+
+function guardarNota(){
+  const txt=document.getElementById('nota-txt').value.trim();if(!txt)return;
+  const c=data.find(x=>x.id===selId);if(!c)return;
+  const ts=new Date().toISOString().slice(0,16).replace('T',' ');
+  c.historial.push({ts,tipo:'nota',txt,autor:currentUser,color:'#F7A800'});
+  renderNotas(c);
+}
+
+function setFase(fid,ci){
+  const c=data.find(x=>x.id===selId);if(!c)return;
+  c.fase=fid;
+  const ts=new Date().toISOString().slice(0,16).replace('T',' ');
+  c.historial.push({ts,tipo:'fase',txt:`Fase → ${gf(fid).n}`,autor:currentUser,color:gf(fid).c});
+  if(fid===3)c.historial.push({ts,tipo:'auto',txt:'Cotización enviada al cliente',autor:'Sistema',color:'#0F6E56'});
+  if(fid===4)c.historial.push({ts,tipo:'auto',txt:'Cotización aprobada por el cliente',autor:'Sistema',color:'#7B3FA0'});
+  if(fid===8)c.historial.push({ts,tipo:'auto',txt:'Diseño aprobado — pasando a terminados',autor:'Sistema',color:'#534AB7'});
+  renderPBody(c);renderBoard();
+}
+
+function updDis(v){
+  const c=data.find(x=>x.id===selId);if(!c)return;
+  if(v&&v!==c.disenador){
+    const ts=new Date().toISOString().slice(0,16).replace('T',' ');
+    c.historial.push({ts,tipo:'auto',txt:`Diseñador asignado: ${v}`,autor:currentUser,color:'#29ABE2'});
+  }
+  c.disenador=v;
+}
+
+function savePanel(){const p=document.getElementById('panel');p.style.borderLeftColor='var(--blue)';setTimeout(()=>{p.style.borderLeftColor='';},700);renderBoard();}
+function deleteSel(){if(!selId||!confirm('¿Eliminar esta orden?'))return;data=data.filter(x=>x.id!==selId);closePanel();}
+function closePanel(){selId=null;document.getElementById('panel').classList.remove('open');renderBoard();}
+
+// ── WIZARD ──
+let wStep=0,wData={productos:[]};
+const WS=[{lbl:'Paso 1 de 4',title:'¿Quién es el cliente?'},{lbl:'Paso 2 de 4',title:'¿Cómo llegó este pedido?'},{lbl:'Paso 3 de 4',title:'Productos del pedido'},{lbl:'Paso 4 de 4',title:'Asignación interna'}];
+
+function openWizard(){wStep=0;wData={productos:[{prod:null,cant:1,tintas:'4x4',paginas:'',papel:'',diseno:'',tamano:'',obs:''}]};document.getElementById('wizard').classList.add('open');renderW();}
+
+function renderW(){
+  const s=WS[wStep];
+  document.getElementById('wlbl').textContent=s.lbl;
+  document.getElementById('wtitle').textContent=s.title;
+  document.getElementById('wback').style.display=wStep===0?'none':'block';
+  document.getElementById('wnext').textContent=wStep===3?'Crear orden':'Continuar';
+  document.getElementById('wsteps').innerHTML=WS.map((_,i)=>`<div class="wst ${i<wStep?'done':i===wStep?'cur':''}"></div>`).join('');
+  const b=document.getElementById('wbody');
+  if(wStep===0)b.innerHTML=`
+    <div class="frow">
+      <div class="fg"><label class="fl">Nombre del cliente</label><input id="w-cli" value="${wData.cliente||''}" placeholder="Nombre completo"/></div>
+      <div class="fg"><label class="fl">Tipo</label><select id="w-tipo"><option${wData.tipo==='Empresa'?' selected':''}>Empresa</option><option${wData.tipo==='Persona'?' selected':''}>Persona</option></select></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Empresa / Organización</label><input id="w-emp" value="${wData.empresa||''}" placeholder="Razón social"/></div>
+      <div class="fg"><label class="fl">NIT / Cédula</label><input id="w-nit" value="${wData.nit||''}" placeholder="900344848"/></div>
+    </div>
+    <div class="fg"><label class="fl">Descripción del pedido</label><textarea id="w-desc" placeholder="¿Qué necesita el cliente?">${wData.desc||''}</textarea></div>`;
+  else if(wStep===1)b.innerHTML=`
+    <div class="frow">
+      <div class="fg"><label class="fl">Canal de entrada</label>
+        <select id="w-canal" onchange="togAt(this.value)">
+          <option${(wData.canal||'manual')==='manual'?' selected':''} value="manual">Manual</option>
+          <option${wData.canal==='gmail'?' selected':''} value="gmail">Gmail</option>
+          <option${wData.canal==='whatsapp'?' selected':''} value="whatsapp">WhatsApp</option>
+          <option${wData.canal==='llamada'?' selected':''} value="llamada">Llamada telefónica</option>
+        </select>
+      </div>
+      <div class="fg" id="at-wrap" style="display:${wData.canal==='llamada'?'block':'none'}">
+        <label class="fl">¿Quién atendió?</label>
+        <select id="w-at"><option value="">Seleccionar...</option>${EQUIPO.map(e=>`<option${wData.atendio===e?' selected':''}>${e}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Creado por</label>
+      <select id="w-creador">${EQUIPO.map(e=>`<option${(wData.creadoPor||currentUser)===e?' selected':''}>${e}</option>`).join('')}</select>
+    </div>`;
+  else if(wStep===2)b.innerHTML=`<div id="plist">${wData.productos.map((_,i)=>rpw(i)).join('')}</div><button class="btn-addp" onclick="addP()">+ Agregar otro producto</button>`;
+  else b.innerHTML=`
+    <div class="fg"><label class="fl">Diseñador asignado</label>
+      <select id="w-dis"><option value="">Sin asignar</option>${DISENADORES.map(d=>`<option${wData.disenador===d?' selected':''}>${d}</option>`).join('')}</select>
+    </div>
+    <div class="fg"><label class="fl">Observaciones internas</label><textarea id="w-obs" placeholder="Notas para el equipo...">${wData.obsInterna||''}</textarea></div>`;
+}
+
+function rpw(i){
+  const p=wData.productos[i];
+  const tag=p.prod?`<div class="pstag">${p.prod.n} <span style="font-size:10px;opacity:.7">${p.prod.c}</span> <button onclick="clrP(${i})">×</button></div>`:'';
+  return `<div class="pwiz" id="pw-${i}">
+    <div class="pwiz-hd"><span class="pwiz-num">Producto ${i+1}</span>${wData.productos.length>1?`<button class="bxdel" onclick="delP(${i})">×</button>`:''}</div>
+    <div class="fg"><label class="fl">Producto</label>
+      <div>${tag}</div>
+      ${!p.prod?`<div class="psearch"><input class="psinp" id="psi-${i}" placeholder="Buscar en catálogo o escribir nombre..." oninput="srchP(${i},this.value)" onfocus="srchP(${i},this.value)" autocomplete="off"/><div class="psdrop" id="pd-${i}"></div></div>`:''}
+    </div>
+    <div class="frow3">
+      <div class="fg"><label class="fl">Cantidad</label><input type="number" id="pc-${i}" value="${p.cant}" min="1"/></div>
+      <div class="fg"><label class="fl">Tintas</label><select id="pt-${i}">${TINTAS.map(t=>`<option${p.tintas===t?' selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Páginas</label><input id="pp-${i}" value="${p.paginas||''}" placeholder="Ej: 32"/></div>
+    </div>
+    <div class="frow3">
+      <div class="fg"><label class="fl">Papel</label><select id="ppa-${i}"><option value="">—</option>${PAPELES.map(x=>`<option${p.papel===x?' selected':''}>${x}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Tamaño</label><select id="ptm-${i}"><option value="">—</option>${TAMANOS.map(x=>`<option${p.tamano===x?' selected':''}>${x}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Diseño</label><select id="pds-${i}"><option value="">—</option>${DISENOS.map(x=>`<option${p.diseno===x?' selected':''}>${x}</option>`).join('')}</select></div>
+    </div>
+    <div class="fg"><label class="fl">Observaciones</label><input id="po-${i}" value="${p.obs||''}" placeholder="Especificaciones adicionales"/></div>
+  </div>`;
+}
+
+function srchP(i,q){
+  const d=document.getElementById('pd-'+i);d.classList.add('open');
+  const r=q.trim()===''?CATALOGO.slice(0,10):CATALOGO.filter(p=>p.n.toLowerCase().includes(q.toLowerCase())||p.c.toLowerCase().includes(q.toLowerCase())).slice(0,10);
+  const nw=q.trim()?`<div class="psnew" onclick="newP(${i},'${q.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">+ Crear "<strong>${q}</strong>" como producto nuevo</div>`:'';
+  d.innerHTML=r.map(p=>`<div class="psitem" onclick="selP(${i},'${p.c}','${p.n.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')"><span class="psname">${p.n}</span><span class="pscode">${p.c}</span></div>`).join('')+(r.length===0?'<div class="psempty">Sin resultados en catálogo</div>':'')+nw;
+}
+
+function selP(i,code,name){svPF(i);wData.productos[i].prod={c:code,n:name};document.getElementById('plist').innerHTML=wData.productos.map((_,j)=>rpw(j)).join('');}
+function newP(i,name){svPF(i);const code='NUEVO-'+Date.now().toString().slice(-4);wData.productos[i].prod={c:code,n:name.toUpperCase()};document.getElementById('plist').innerHTML=wData.productos.map((_,j)=>rpw(j)).join('');}
+function clrP(i){wData.productos[i].prod=null;document.getElementById('plist').innerHTML=wData.productos.map((_,j)=>rpw(j)).join('');}
+
+function svPF(i){
+  const p=wData.productos[i];
+  const g=(id)=>{const el=document.getElementById(id);return el?el.value:''};
+  p.cant=parseInt(g('pc-'+i))||1;p.tintas=g('pt-'+i);p.paginas=g('pp-'+i);p.papel=g('ppa-'+i);p.tamano=g('ptm-'+i);p.diseno=g('pds-'+i);p.obs=g('po-'+i);
+}
+
+function addP(){wData.productos.forEach((_,i)=>svPF(i));wData.productos.push({prod:null,cant:1,tintas:'4x4',paginas:'',papel:'',diseno:'',tamano:'',obs:''});document.getElementById('plist').innerHTML=wData.productos.map((_,i)=>rpw(i)).join('');}
+function delP(i){wData.productos.forEach((_,j)=>svPF(j));wData.productos.splice(i,1);document.getElementById('plist').innerHTML=wData.productos.map((_,j)=>rpw(j)).join('');}
+function togAt(v){document.getElementById('at-wrap').style.display=v==='llamada'?'block':'none';}
+
+function colStep(){
+  if(wStep===0){wData.cliente=document.getElementById('w-cli').value.trim();wData.tipo=document.getElementById('w-tipo').value;wData.empresa=document.getElementById('w-emp').value.trim();wData.nit=document.getElementById('w-nit').value.trim();wData.desc=document.getElementById('w-desc').value.trim();}
+  else if(wStep===1){wData.canal=document.getElementById('w-canal').value;const at=document.getElementById('w-at');wData.atendio=at?at.value:'';wData.creadoPor=document.getElementById('w-creador').value;}
+  else if(wStep===2){wData.productos.forEach((_,i)=>svPF(i));}
+  else{wData.disenador=document.getElementById('w-dis').value;wData.obsInterna=document.getElementById('w-obs').value.trim();}
+}
+function wBack(){if(wStep>0){colStep();wStep--;renderW();}}
+function wNext(){colStep();if(wStep<3){wStep++;renderW();}else crearOrden();}
+
+function crearOrden(){
+  if(!wData.cliente||!wData.empresa){alert('Completa el nombre del cliente y la empresa.');wStep=0;renderW();return;}
+  const ts=new Date().toISOString().slice(0,16).replace('T',' ');
+  const hist=[
+    {ts,tipo:'creacion',txt:'Orden creada',autor:wData.creadoPor||currentUser,color:'#29ABE2'},
+    {ts,tipo:'auto',txt:`Canal: ${wData.canal==='llamada'?'Llamada'+(wData.atendio?' — atendió '+wData.atendio:''):wData.canal}`,autor:'Sistema',color:'#6B7E8F'},
+  ];
+  if(wData.disenador)hist.push({ts,tipo:'auto',txt:`Diseñador asignado: ${wData.disenador}`,autor:'Sistema',color:'#29ABE2'});
+  if(wData.obsInterna)hist.push({ts,tipo:'nota',txt:wData.obsInterna,autor:wData.creadoPor||currentUser,color:'#F7A800'});
+  const nueva={id:'PRE-'+nextN++,cliente:wData.cliente,empresa:wData.empresa,nit:wData.nit||'',tipo:wData.tipo||'Empresa',desc:wData.desc||'',fase:0,fecha:new Date().toISOString().slice(0,10),canal:wData.canal||'manual',atendio:wData.atendio||'',creadoPor:wData.creadoPor||currentUser,disenador:wData.disenador||'',productos:wData.productos.filter(p=>p.prod),historial:hist};
+  data.push(nueva);
+  document.getElementById('wizard').classList.remove('open');
+  curPipe='comercial';document.querySelectorAll('.ptb').forEach((b,i)=>b.classList.toggle('active',i===0));
+  renderBoard();setTimeout(()=>openPanel(nueva.id),80);
+}
+
+document.getElementById('wizard').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+document.addEventListener('click',function(e){if(!e.target.closest('.psearch'))document.querySelectorAll('.psdrop.open').forEach(d=>d.classList.remove('open'));});
+
+function renderMetrics(){
+  const total=data.length,aprobadas=data.filter(d=>d.fase>=4).length,enProd=data.filter(d=>d.fase>=5&&d.fase<=8).length,tasa=total>0?Math.round((aprobadas/total)*100):0;
+  const pf=AF.map(f=>({...f,count:data.filter(d=>d.fase===f.id).length}));
+  const pd={};data.forEach(d=>{if(d.disenador)pd[d.disenador]=(pd[d.disenador]||0)+1;});
+  document.getElementById('mview').innerHTML=`
+    <div class="mgrid">
+      <div class="mcard accent"><div class="mlbl">Total órdenes</div><div class="mval">${total}</div><div class="msub">Todas las fases</div></div>
+      <div class="mcard"><div class="mlbl">Aprobadas</div><div class="mval">${aprobadas}</div><div class="msub">Comercial cerrado</div></div>
+      <div class="mcard"><div class="mlbl">En producción</div><div class="mval">${enProd}</div><div class="msub">Diseño → Terminados</div></div>
+      <div class="mcard"><div class="mlbl">Tasa de cierre</div><div class="mval">${tasa}%</div><div class="msub">Aprobadas / total</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+        <div class="slbl" style="margin-bottom:12px">Por fase</div>
+        ${pf.map(f=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:7px;height:7px;border-radius:50%;background:${f.c};flex-shrink:0"></div><div style="font-size:12px;flex:1;color:var(--text)">${f.n}</div><div style="font-size:12px;font-family:'DM Mono',monospace;font-weight:700">${f.count}</div><div style="width:72px;height:5px;background:var(--s2);border-radius:3px;overflow:hidden"><div style="height:100%;background:${f.c};width:${total>0?Math.round((f.count/total)*100):0}%;border-radius:3px"></div></div></div>`).join('')}
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+        <div class="slbl" style="margin-bottom:12px">Carga por diseñador</div>
+        ${Object.entries(pd).sort((a,b)=>b[1]-a[1]).map(([d,n])=>`<div style="display:flex;align-items:center;gap:9px;margin-bottom:9px"><div style="width:26px;height:26px;border-radius:50%;background:var(--bluelight);border:1px solid var(--blue);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--bluedark);flex-shrink:0">${d.split(' ').map(x=>x[0]).join('').slice(0,2)}</div><div style="font-size:12px;flex:1">${d}</div><div style="font-size:12px;font-family:'DM Mono',monospace;font-weight:700">${n}</div></div>`).join('')||'<div style="font-size:12px;color:var(--muted);font-style:italic">Sin asignaciones</div>'}
+      </div>
+    </div>`;
+}
+
+renderBoard();
+</script>
+</body>
+</html>
